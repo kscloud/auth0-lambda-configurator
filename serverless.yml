@@ -1,0 +1,37 @@
+service:
+  name: serverless-auth0-lambda
+
+frameworkVersion: ">=1.6.1 <2.0.0"
+
+package:
+  exclude:
+    - ./**
+  include:
+    - handler.py
+    - config.py
+
+provider:
+  name: aws
+  runtime: python3.7
+  cfLogs: true
+  memorySize: 128
+  defaultTimeout: 60
+  timeout: 60
+  region: ${opt:region, 'eu-west-1'}
+  stage: ${opt:stage, 'staging'}
+  awsAccountId: YOUR_ACCOUNT_ID
+  deploymentBucket: DEPLOYMENT_BUCKET
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'ssm:GetParameter'
+      Resource:
+        - "arn:aws:ssm:eu-west-1:YOUR_ACCOUNT_ID:parameter/auth0/client_id"
+        - "arn:aws:ssm:eu-west-1:YOUR_ACCOUNT_ID:parameter/auth0/client_secret"
+
+functions:
+  configure:
+    handler: handler.configure
+    tags:
+      Environment: ${opt:stage, self:provider.stage}
+      Application: auth0-lambda-configurator
